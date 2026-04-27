@@ -121,8 +121,9 @@ export async function POST(request: NextRequest) {
               <div class="detail-value">${slotDisplay}</div>
             </div>
             <div class="buttons">
-              <a href="${APP_URL}/api/bookings/${booking.id}/accept" class="btn btn-accept">✓ Akceptuj wizytę</a>
-              <a href="${APP_URL}/api/bookings/${booking.id}/reject" class="btn btn-reject">✕ Odrzuć</a>
+              // PO (poprawne):
+              <a href="${APP_URL}/api/bookings/${booking.token}/accept" class="btn btn-accept">
+              <a href="${APP_URL}/api/bookings/${booking.token}/reject" class="btn btn-reject">
             </div>
           </div>
           <div class="footer">BeautyFlow · Panel właścicielki: <a href="${APP_URL}/admin" style="color:#d4a843">${APP_URL}/admin</a></div>
