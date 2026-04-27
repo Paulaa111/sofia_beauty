@@ -7,23 +7,22 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const OWNER_EMAIL = process.env.OWNER_EMAIL || "owner@example.com"
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
-// Wspólny styl maili
 const emailStyles = `
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1c1c1a; color: #f5f5f4; margin: 0; padding: 20px; }
-  .container { max-width: 600px; margin: 0 auto; background: #262624; border-radius: 12px; overflow: hidden; }
-  .header { background: linear-gradient(135deg, #d4a843 0%, #c49a3a 100%); padding: 24px; text-align: center; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f0; color: #1c1c1a; margin: 0; padding: 20px; }
+  .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .header { background: linear-gradient(135deg, #d4a843 0%, #c49a3a 100%); padding: 28px 24px; text-align: center; }
   .header h1 { color: #1c1c1a; margin: 0; font-size: 24px; font-weight: 700; }
   .content { padding: 28px; }
-  .detail { margin-bottom: 16px; border-bottom: 1px solid #333330; padding-bottom: 16px; }
+  .detail { margin-bottom: 16px; border-bottom: 1px solid #ebebeb; padding-bottom: 16px; }
   .detail:last-of-type { border-bottom: none; }
-  .detail-label { color: #a8a8a6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-  .detail-value { font-size: 16px; font-weight: 500; color: #f5f5f4; }
+  .detail-label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .detail-value { font-size: 16px; font-weight: 500; color: #1c1c1a; }
   .buttons { display: flex; gap: 12px; margin-top: 28px; }
   .btn { display: inline-block; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; flex: 1; font-size: 15px; }
-  .btn-accept { background: #22c55e; color: white; }
-  .btn-reject { background: #ef4444; color: white; }
-  .badge { display: inline-block; background: #d4a843; color: #1c1c1a; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
-  .footer { padding: 16px 28px; background: #1c1c1a; text-align: center; font-size: 12px; color: #666; }
+  .btn-accept { background: #22c55e; color: #ffffff; }
+  .btn-reject { background: #ef4444; color: #ffffff; }
+  .badge { display: inline-block; background: #fef3c7; color: #92400e; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
+  .footer { padding: 16px 28px; background: #fafaf8; border-top: 1px solid #ebebeb; text-align: center; font-size: 12px; color: #999; }
 `
 
 export async function GET() {
@@ -46,14 +45,12 @@ export async function POST(request: NextRequest) {
   const body = await request.json()
   const { clientName, clientEmail, clientPhone, procedureName, slotId, slotDisplay } = body
 
-  // Walidacja
   if (!clientName || !clientEmail || !procedureName || !slotId) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
   }
 
   const supabase = await createClient()
 
-  // Sprawdź czy termin jest dostępny
   const { data: slot, error: slotError } = await supabase
     .from("slots")
     .select("*")
@@ -65,7 +62,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Slot is no longer available" }, { status: 400 })
   }
 
-  // Utwórz rezerwację
   const { data: booking, error: bookingError } = await supabase
     .from("bookings")
     .insert({
@@ -86,16 +82,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to create booking" }, { status: 500 })
   }
 
-  // Zablokuj slot
   await supabase
     .from("slots")
     .update({ status: "booked" })
     .eq("id", slotId)
 
   if (process.env.RESEND_API_KEY) {
-    // ── MAIL DO WŁAŚCICIELKI ──────────────────────────────────────────────
     const ownerHtml = `
-      <!DOCTYPE html><html><head><style>${emailStyles}</style></head>
+      <!DOCTYPE html><html><head><meta charset="utf-8"><style>${emailStyles}</style></head>
       <body>
         <div class="container">
           <div class="header"><h1>🗓 Nowa Rezerwacja</h1></div>
@@ -121,24 +115,22 @@ export async function POST(request: NextRequest) {
               <div class="detail-value">${slotDisplay}</div>
             </div>
             <div class="buttons">
-              // PO (poprawne):
-              <a href="${APP_URL}/api/bookings/${booking.token}/accept" class="btn btn-accept">
-              <a href="${APP_URL}/api/bookings/${booking.token}/reject" class="btn btn-reject">
+              <a href="${APP_URL}/api/bookings/${booking.token}/accept" class="btn btn-accept">✅ Potwierdź wizytę</a>
+              <a href="${APP_URL}/api/bookings/${booking.token}/reject" class="btn btn-reject">❌ Odrzuć</a>
             </div>
           </div>
-          <div class="footer">BeautyFlow · Panel właścicielki: <a href="${APP_URL}/admin" style="color:#d4a843">${APP_URL}/admin</a></div>
+          <div class="footer">BeautyFlow · Panel admina: <a href="${APP_URL}/admin" style="color:#d4a843">${APP_URL}/admin</a></div>
         </div>
       </body></html>
     `
 
-    // ── MAIL DO KLIENTKI (zgłoszenie przyjęte, czeka na potwierdzenie) ────
     const clientPendingHtml = `
-      <!DOCTYPE html><html><head><style>${emailStyles}</style></head>
+      <!DOCTYPE html><html><head><meta charset="utf-8"><style>${emailStyles}</style></head>
       <body>
         <div class="container">
           <div class="header"><h1>✨ Rezerwacja przyjęta!</h1></div>
           <div class="content">
-            <p style="margin-top:0; color:#d4c9b0;">Cześć <strong>${clientName}</strong>! Twoja prośba o rezerwację została wysłana do salonu. Poinformujemy Cię, gdy zostanie potwierdzona.</p>
+            <p style="margin-top:0; color:#444;">Cześć <strong>${clientName}</strong>! Twoja prośba o rezerwację dotarła do salonu. Poinformujemy Cię mailowo, gdy zostanie potwierdzona.</p>
             <div class="detail">
               <div class="detail-label">Zabieg</div>
               <div class="detail-value">${procedureName}</div>
@@ -151,7 +143,7 @@ export async function POST(request: NextRequest) {
               <div class="detail-label">Status</div>
               <div class="detail-value"><span class="badge">⏳ Oczekuje na potwierdzenie</span></div>
             </div>
-            <p style="color:#a8a8a6; font-size:14px;">Masz pytania? Odpowiedz na tego maila lub zadzwoń do salonu.</p>
+            <p style="color:#888; font-size:14px; margin-bottom:0;">Masz pytania? Odpowiedz na tego maila lub zadzwoń do salonu.</p>
           </div>
           <div class="footer">BeautyFlow · Dziękujemy za zaufanie 💛</div>
         </div>
@@ -169,13 +161,12 @@ export async function POST(request: NextRequest) {
         resend.emails.send({
           from: "BeautyFlow <onboarding@resend.dev>",
           to: clientEmail,
-          subject: `Twoja rezerwacja została wysłana – ${procedureName}`,
+          subject: `Twoja rezerwacja została przyjęta – ${procedureName}`,
           html: clientPendingHtml,
         }),
       ])
     } catch (emailError) {
       console.error("Error sending emails:", emailError)
-      // Nie anuluj rezerwacji jeśli mail nie doszedł
     }
   }
 
