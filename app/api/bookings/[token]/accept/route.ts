@@ -5,6 +5,39 @@ import { Resend } from "resend"
 const resend = new Resend(process.env.RESEND_API_KEY)
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
+const procedureTips: Record<string, string[]> = {
+  "Makijaż okolicznościowy": [
+    "Przyjdź z czystą, nawilżoną twarzą — bez makijażu",
+    "Unikaj tłustych kremów w dniu zabiegu",
+    "Jeśli nosisz soczewki, weź ze sobą okulary"
+  ],
+  "Laminacja Brwi": [
+    "Przed wizytą nie nakładaj żadnych produktów na brwi",
+    "Nie mocz brwi przez 24h po zabiegu",
+    "Unikaj sauny i basenu przez 24h po zabiegu"
+  ],
+  "Laminacja Rzęs": [
+    "Przed wizytą zdejmij tusz i inne produkty z rzęs",
+    "Nie mocz rzęs przez 24h po zabiegu",
+    "Unikaj sauny i basenu przez 48h po zabiegu"
+  ],
+  "Henna + Regulacja Brwi": [
+    "Nie nakładaj kremów ani makijażu na brwi przed wizytą",
+    "Poinformuj nas jeśli masz alergię na henę",
+    "Nie mocz brwi przez 12h po zabiegu"
+  ],
+  "Przedłużanie Rzęs 1:1": [
+    "Przyjdź bez tuszu i mascary — rzęsy muszą być czyste",
+    "Nie używaj tłustych produktów wokół oczu przed wizytą",
+    "Po zabiegu unikaj wody przez 24h i śpij na plecach"
+  ]
+}
+
+const getDefaultTips = () => [
+  "Przyjdź punktualnie na wizytę",
+  "W razie pytań skontaktuj się z salonem"
+]
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
@@ -26,45 +59,54 @@ export async function GET(
     })
   }
 
- // Synchronizacja z Google Sheets + Kalendarz
-if (process.env.GOOGLE_SCRIPT_URL) {
-  try {
-    await Promise.all([
-      // Aktualizacja statusu w arkuszu
-      fetch(process.env.GOOGLE_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update_status",
-          client_email: booking.client_email,
-          slot_display: booking.slot_display,
-          created_at: new Date(booking.created_at).toLocaleString("pl-PL"),
-          client_name: booking.client_name,
-          client_phone: booking.client_phone || "—",
-          procedure_name: booking.procedure_name,
-          status: "Potwierdzona"
+  // Synchronizacja z Google Sheets + Kalendarz
+  if (process.env.GOOGLE_SCRIPT_URL) {
+    try {
+      await Promise.all([
+        fetch(process.env.GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "update_status",
+            client_email: booking.client_email,
+            slot_display: booking.slot_display,
+            created_at: new Date(booking.created_at).toLocaleString("pl-PL"),
+            client_name: booking.client_name,
+            client_phone: booking.client_phone || "—",
+            procedure_name: booking.procedure_name,
+            status: "Potwierdzona"
+          })
+        }),
+        fetch(process.env.GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "calendar",
+            client_name: booking.client_name,
+            client_email: booking.client_email,
+            client_phone: booking.client_phone || "—",
+            procedure_name: booking.procedure_name,
+            slot_display: booking.slot_display,
+          })
         })
-      }),
-      // Dodanie do Google Calendar
-      fetch(process.env.GOOGLE_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "calendar",
-          client_name: booking.client_name,
-          client_email: booking.client_email,
-          client_phone: booking.client_phone || "—",
-          procedure_name: booking.procedure_name,
-          slot_display: booking.slot_display,
-        })
-      })
-    ])
-  } catch (err) {
-    console.error("Google sync error:", err)
+      ])
+    } catch (err) {
+      console.error("Google sync error:", err)
+    }
   }
-}
 
   if (process.env.RESEND_API_KEY && booking.client_email) {
+    const tips = procedureTips[booking.procedure_name] || getDefaultTips()
+    const tipsHtml = tips
+      .map(tip => `
+        <tr>
+          <td style="padding:8px 0;font-size:14px;color:#444444;border-bottom:1px solid #f5f0e8;">
+            <span style="color:#d4a843;margin-right:8px;">✦</span>${tip}
+          </td>
+        </tr>
+      `)
+      .join("")
+
     try {
       await resend.emails.send({
         from: "BeautyFlow <onboarding@resend.dev>",
@@ -105,6 +147,22 @@ if (process.env.GOOGLE_SCRIPT_URL) {
                       <tr><td>
                         <span style="display:inline-block;background:#fef3c7;color:#7a5c3a;border-radius:20px;padding:6px 16px;font-size:14px;font-weight:600;">Potwierdzona</span>
                       </td></tr>
+                    </table>
+
+                    <!-- Zalecenia -->
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                      <tr>
+                        <td style="background:#fdf9f0;border-radius:8px;padding:16px;">
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="font-size:13px;font-weight:600;color:#7a5c3a;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:12px;">
+                                Jak się przygotować?
+                              </td>
+                            </tr>
+                            ${tipsHtml}
+                          </table>
+                        </td>
+                      </tr>
                     </table>
 
                     <p style="font-size:14px;color:#666666;margin:0 0 32px;">
