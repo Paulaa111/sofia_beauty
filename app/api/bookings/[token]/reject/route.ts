@@ -50,6 +50,27 @@ export async function GET(
     .update({ status: "available" })
     .eq("id", booking.slot_id)
 
+  // Synchronizacja z Google Sheets
+  if (process.env.GOOGLE_SCRIPT_URL) {
+    try {
+      await fetch(process.env.GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          created_at: new Date(booking.created_at).toLocaleString("pl-PL"),
+          client_name: booking.client_name,
+          client_email: booking.client_email,
+          client_phone: booking.client_phone || "—",
+          procedure_name: booking.procedure_name,
+          slot_display: booking.slot_display,
+          status: "Odrzucona"
+        })
+      })
+    } catch (err) {
+      console.error("Google Sheets sync error:", err)
+    }
+  }
+
   if (process.env.RESEND_API_KEY && booking.client_email) {
     const rejectedHtml = `
       <!DOCTYPE html><html><head><meta charset="utf-8"><style>${emailStyles}</style></head>
