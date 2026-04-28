@@ -114,13 +114,13 @@ export async function POST(request: NextRequest) {
               <tr>
                 <td style="padding-right:12px;">
                   <a href="${APP_URL}/api/bookings/${booking.token}/accept"
-                     style="display:inline-block;padding:14px 32px;border-radius:24px;text-decoration:none;font-weight:600;font-size:15px;background:#e8c46a;color:#5c3d00;">
+                     style="display:inline-block;padding:14px 32px;border-radius:24px;text-decoration:none !important;font-weight:600;font-size:15px;background:#e8c46a;color:#5c3d00 !important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
                     Potwierdź wizytę
                   </a>
                 </td>
                 <td>
                   <a href="${APP_URL}/api/bookings/${booking.token}/reject"
-                     style="display:inline-block;padding:14px 32px;border-radius:24px;text-decoration:none;font-weight:600;font-size:15px;background:#c4a882;color:#3d2800;">
+                     style="display:inline-block;padding:14px 32px;border-radius:24px;text-decoration:none !important;font-weight:600;font-size:15px;background:#c4a882;color:#3d2800 !important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
                     Odrzuć
                   </a>
                 </td>
