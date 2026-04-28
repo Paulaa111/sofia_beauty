@@ -31,59 +31,42 @@ export async function GET(
       await resend.emails.send({
         from: "BeautyFlow <onboarding@resend.dev>",
         to: booking.client_email,
-        subject: `✅ Wizyta potwierdzona – ${booking.procedure_name}`,
+        subject: `Wizyta potwierdzona – ${booking.procedure_name}`,
         html: `
           <!DOCTYPE html>
           <html>
           <head><meta charset="utf-8"></head>
-          <body style="margin:0;padding:0;background:#f9f9f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f9;padding:32px 16px;">
+          <body style="margin:0;padding:0;background:#f5f2ec;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f2ec;padding:32px 16px;">
               <tr><td align="center">
                 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
-                  
-                  <!-- HEADER -->
-                  <tr><td style="background:#22c55e;padding:32px 24px;text-align:center;">
-                    <p style="margin:0;font-size:32px;">✅</p>
-                    <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;font-weight:700;">Wizyta potwierdzona!</h1>
+
+                  <tr><td style="background:linear-gradient(135deg,#d4a843 0%,#c49a3a 100%);padding:32px 24px;text-align:center;">
+                    <p style="margin:0;font-size:32px;">✨</p>
+                    <h1 style="margin:8px 0 0;color:#1c1c1a;font-size:24px;font-weight:700;">Wizyta potwierdzona!</h1>
                   </td></tr>
 
-                  <!-- BODY -->
                   <tr><td style="padding:32px 32px 8px;">
                     <p style="margin:0 0 24px;font-size:16px;color:#333333;">
-                      Cześć <strong>${booking.client_name}</strong>! 🎉<br/>
+                      Cześć <strong>${booking.client_name}</strong>!<br/>
                       Twoja wizyta została <strong>potwierdzona</strong>. Czekamy na Ciebie!
                     </p>
 
-                    <!-- Zabieg -->
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;border-bottom:1px solid #f0f0f0;padding-bottom:16px;">
-                      <tr>
-                        <td style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;">Zabieg</td>
-                      </tr>
-                      <tr>
-                        <td style="font-size:18px;font-weight:600;color:#111111;">${booking.procedure_name}</td>
-                      </tr>
+                      <tr><td style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;">Zabieg</td></tr>
+                      <tr><td style="font-size:18px;font-weight:600;color:#111111;">${booking.procedure_name}</td></tr>
                     </table>
 
-                    <!-- Termin -->
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;border-bottom:1px solid #f0f0f0;padding-bottom:16px;">
-                      <tr>
-                        <td style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;">Termin</td>
-                      </tr>
-                      <tr>
-                        <td style="font-size:18px;font-weight:600;color:#111111;">${booking.slot_display}</td>
-                      </tr>
+                      <tr><td style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;">Termin</td></tr>
+                      <tr><td style="font-size:18px;font-weight:600;color:#111111;">${booking.slot_display}</td></tr>
                     </table>
 
-                    <!-- Status -->
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-                      <tr>
-                        <td style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;">Status</td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <span style="display:inline-block;background:#dcfce7;color:#166534;border-radius:20px;padding:6px 16px;font-size:14px;font-weight:600;">✅ Potwierdzona</span>
-                        </td>
-                      </tr>
+                      <tr><td style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;">Status</td></tr>
+                      <tr><td>
+                        <span style="display:inline-block;background:#fef3c7;color:#7a5c3a;border-radius:20px;padding:6px 16px;font-size:14px;font-weight:600;">Potwierdzona</span>
+                      </td></tr>
                     </table>
 
                     <p style="font-size:14px;color:#666666;margin:0 0 32px;">
@@ -91,8 +74,7 @@ export async function GET(
                     </p>
                   </td></tr>
 
-                  <!-- FOOTER -->
-                  <tr><td style="background:#f9f9f9;padding:16px 32px;text-align:center;border-top:1px solid #f0f0f0;">
+                  <tr><td style="background:#fafaf8;padding:16px 32px;text-align:center;border-top:1px solid #f0f0f0;">
                     <p style="margin:0;font-size:12px;color:#999999;">BeautyFlow · Dziękujemy za zaufanie 💛</p>
                   </td></tr>
 
@@ -114,7 +96,7 @@ export async function GET(
 }
 
 function renderResultPage(success: boolean, message: string) {
-  const color = success ? "#22c55e" : "#ef4444"
+  const color = success ? "#d4a843" : "#7a5c3a"
   const icon = success ? "✓" : "✗"
   return `
     <!DOCTYPE html>
@@ -127,7 +109,7 @@ function renderResultPage(success: boolean, message: string) {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1c1c1a; color: #f5f5f4; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .container { text-align: center; max-width: 400px; }
-        .icon { width: 80px; height: 80px; border-radius: 50%; background: ${color}20; color: ${color}; font-size: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
+        .icon { width: 80px; height: 80px; border-radius: 50%; background: ${color}30; color: ${color}; font-size:40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
         h1 { font-size: 24px; margin-bottom: 12px; }
         p { color: #a8a8a6; line-height: 1.6; }
       </style>
