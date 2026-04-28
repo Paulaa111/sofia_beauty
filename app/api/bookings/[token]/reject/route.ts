@@ -57,6 +57,7 @@ export async function GET(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "update_status",
           created_at: new Date(booking.created_at).toLocaleString("pl-PL"),
           client_name: booking.client_name,
           client_email: booking.client_email,
