@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "create",   // ← dodaj tę linijkę
           created_at: new Date().toLocaleString("pl-PL"),
           client_name: clientName,
           client_email: clientEmail,
