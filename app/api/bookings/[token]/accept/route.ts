@@ -26,26 +26,43 @@ export async function GET(
     })
   }
 
-  // Synchronizacja z Google Sheets
-  if (process.env.GOOGLE_SCRIPT_URL) {
-    try {
-      await fetch(process.env.GOOGLE_SCRIPT_URL, {
+ // Synchronizacja z Google Sheets + Kalendarz
+if (process.env.GOOGLE_SCRIPT_URL) {
+  try {
+    await Promise.all([
+      // Aktualizacja statusu w arkuszu
+      fetch(process.env.GOOGLE_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "update_status",
+          client_email: booking.client_email,
+          slot_display: booking.slot_display,
           created_at: new Date(booking.created_at).toLocaleString("pl-PL"),
+          client_name: booking.client_name,
+          client_phone: booking.client_phone || "—",
+          procedure_name: booking.procedure_name,
+          status: "Potwierdzona"
+        })
+      }),
+      // Dodanie do Google Calendar
+      fetch(process.env.GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "calendar",
           client_name: booking.client_name,
           client_email: booking.client_email,
           client_phone: booking.client_phone || "—",
           procedure_name: booking.procedure_name,
           slot_display: booking.slot_display,
-          status: "Potwierdzona"
         })
       })
-    } catch (err) {
-      console.error("Google Sheets sync error:", err)
-    }
+    ])
+  } catch (err) {
+    console.error("Google sync error:", err)
   }
+}
 
   if (process.env.RESEND_API_KEY && booking.client_email) {
     try {
