@@ -17,10 +17,10 @@ const emailStyles = `
   .detail:last-of-type { border-bottom: none; }
   .detail-label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
   .detail-value { font-size: 16px; font-weight: 500; color: #1c1c1a; }
-  .buttons { display: flex; gap: 12px; margin-top: 28px; }
-  .btn { display: inline-block; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; flex: 1; font-size: 15px; }
-  .btn-accept { background: #d4a843; color: #1c1c1a; }
-  .btn-reject { background: #7a5c3a; color: #ffffff; }
+  .buttons { margin-top: 28px; }
+  .btn { display: inline-block; padding: 14px 32px; border-radius: 24px; text-decoration: none; font-weight: 600; text-align: center; font-size: 15px; }
+  .btn-accept { background: #e8c46a; color: #5c3d00; }
+  .btn-reject { background: #c4a882; color: #3d2800; }
   .badge { display: inline-block; background: #fef3c7; color: #7a5c3a; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
   .footer { padding: 16px 28px; background: #fafaf8; border-top: 1px solid #ebebeb; text-align: center; font-size: 12px; color: #999; }
 `
