@@ -83,6 +83,27 @@ export async function POST(request: NextRequest) {
     .update({ status: "booked" })
     .eq("id", slotId)
 
+  // Synchronizacja z Google Sheets
+  if (process.env.GOOGLE_SCRIPT_URL) {
+    try {
+      await fetch(process.env.GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          created_at: new Date().toLocaleString("pl-PL"),
+          client_name: clientName,
+          client_email: clientEmail,
+          client_phone: clientPhone || "—",
+          procedure_name: procedureName,
+          slot_display: slotDisplay,
+          status: "Oczekuje"
+        })
+      })
+    } catch (err) {
+      console.error("Google Sheets sync error:", err)
+    }
+  }
+
   if (process.env.RESEND_API_KEY) {
     const ownerHtml = `
       <!DOCTYPE html><html><head><meta charset="utf-8"><style>${emailStyles}</style></head>
