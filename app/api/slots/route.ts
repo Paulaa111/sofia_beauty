@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     .from("slots")
     .select("*")
     .eq("is_booked", false)
+    .eq("status", "available")
     .gte("start_time", now.toISOString())
     .lte("start_time", thirtyDaysLater.toISOString())
     .order("start_time", { ascending: true })
@@ -45,7 +46,6 @@ export async function GET(request: NextRequest) {
       // backwards-compatible fields expected by the old UI
       slot_datetime: dt,
       slot_display: display,
-      status: "available",
       procedure_name: procedure,
     }
   })
