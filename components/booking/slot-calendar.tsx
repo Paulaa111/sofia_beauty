@@ -20,7 +20,7 @@ export function SlotCalendar({ slots, onSelect, selected, isLoading }: SlotCalen
   const slotsByDate = useMemo(() => {
     const grouped: Record<string, Slot[]> = {}
     slots.forEach(slot => {
-      const date = new Date(slot.slot_datetime).toISOString().split('T')[0]
+      const date = slot.slot_datetime.split("T")[0]
       if (!grouped[date]) grouped[date] = []
       grouped[date].push(slot)
     })
