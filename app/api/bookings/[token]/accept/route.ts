@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
 const procedureTips: Record<string, string[]> = {
-  "Makijaż okolicznościowy": [
+  "Makijaż": [
     "Przyjdź z czystą, nawilżoną twarzą — bez makijażu",
     "Unikaj tłustych kremów w dniu zabiegu",
     "Jeśli nosisz soczewki, weź ze sobą okulary"
@@ -21,7 +21,7 @@ const procedureTips: Record<string, string[]> = {
     "Nie mocz rzęs przez 24h po zabiegu",
     "Unikaj sauny i basenu przez 48h po zabiegu"
   ],
-  "Henna + Regulacja Brwi": [
+  "Henna Brwi": [
     "Nie nakładaj kremów ani makijażu na brwi przed wizytą",
     "Poinformuj nas jeśli masz alergię na henę",
     "Nie mocz brwi przez 12h po zabiegu"
