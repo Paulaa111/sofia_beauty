@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
 const emailStyles = `
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f0; color: #1c1c1a; margin: 0; padding: 20px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f2ec; color: #1c1c1a; margin: 0; padding: 20px; }
   .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
   .header { background: linear-gradient(135deg, #d4a843 0%, #c49a3a 100%); padding: 28px 24px; text-align: center; }
   .header h1 { color: #1c1c1a; margin: 0; font-size: 24px; font-weight: 700; }
@@ -15,7 +15,7 @@ const emailStyles = `
   .detail:last-of-type { border-bottom: none; }
   .detail-label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
   .detail-value { font-size: 16px; font-weight: 500; color: #1c1c1a; }
-  .badge-rejected { display: inline-block; background: #fee2e2; color: #991b1b; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
+  .badge-rejected { display: inline-block; background: #f5ede0; color: #7a5c3a; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
   .footer { padding: 16px 28px; background: #fafaf8; border-top: 1px solid #ebebeb; text-align: center; font-size: 12px; color: #999; }
 `
 
@@ -68,9 +68,11 @@ export async function GET(
             </div>
             <div class="detail">
               <div class="detail-label">Status</div>
-              <div class="detail-value"><span class="badge-rejected">❌ Niedostępny</span></div>
+              <div class="detail-value"><span class="badge-rejected">Niedostępny</span></div>
             </div>
-            <p style="margin-bottom:0;"><a href="${APP_URL}" style="display:inline-block; background:#d4a843; color:#1c1c1a; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;">Zarezerwuj inny termin →</a></p>
+            <p style="margin-bottom:0;">
+              <a href="${APP_URL}" style="display:inline-block; background:#d4a843; color:#1c1c1a; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;">Zarezerwuj inny termin →</a>
+            </p>
           </div>
           <div class="footer">BeautyFlow · Przepraszamy za niedogodności 💛</div>
         </div>
