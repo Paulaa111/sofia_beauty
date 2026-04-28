@@ -8,7 +8,7 @@ const OWNER_EMAIL = process.env.OWNER_EMAIL || "owner@example.com"
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
 const emailStyles = `
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f0; color: #1c1c1a; margin: 0; padding: 20px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f2ec; color: #1c1c1a; margin: 0; padding: 20px; }
   .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
   .header { background: linear-gradient(135deg, #d4a843 0%, #c49a3a 100%); padding: 28px 24px; text-align: center; }
   .header h1 { color: #1c1c1a; margin: 0; font-size: 24px; font-weight: 700; }
@@ -19,9 +19,9 @@ const emailStyles = `
   .detail-value { font-size: 16px; font-weight: 500; color: #1c1c1a; }
   .buttons { display: flex; gap: 12px; margin-top: 28px; }
   .btn { display: inline-block; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; flex: 1; font-size: 15px; }
-  .btn-accept { background: #22c55e; color: #ffffff; }
-  .btn-reject { background: #ef4444; color: #ffffff; }
-  .badge { display: inline-block; background: #fef3c7; color: #92400e; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
+  .btn-accept { background: #d4a843; color: #1c1c1a; }
+  .btn-reject { background: #7a5c3a; color: #ffffff; }
+  .badge { display: inline-block; background: #fef3c7; color: #7a5c3a; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
   .footer { padding: 16px 28px; background: #fafaf8; border-top: 1px solid #ebebeb; text-align: center; font-size: 12px; color: #999; }
 `
 
@@ -115,8 +115,8 @@ export async function POST(request: NextRequest) {
               <div class="detail-value">${slotDisplay}</div>
             </div>
             <div class="buttons">
-              <a href="${APP_URL}/api/bookings/${booking.token}/accept" class="btn btn-accept">✅ Potwierdź wizytę</a>
-              <a href="${APP_URL}/api/bookings/${booking.token}/reject" class="btn btn-reject">❌ Odrzuć</a>
+              <a href="${APP_URL}/api/bookings/${booking.token}/accept" class="btn btn-accept">Potwierdź wizytę</a>
+              <a href="${APP_URL}/api/bookings/${booking.token}/reject" class="btn btn-reject">Odrzuć</a>
             </div>
           </div>
           <div class="footer">BeautyFlow · Panel admina: <a href="${APP_URL}/admin" style="color:#d4a843">${APP_URL}/admin</a></div>
