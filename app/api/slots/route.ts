@@ -32,10 +32,11 @@ export async function GET(request: NextRequest) {
     const dt = s.start_time
     const display = (() => {
       try {
-        const d = new Date(dt)
-        const date = d.toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit", year: "numeric" })
-        const time = d.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })
-        return `${date} ${time}`
+        // Wyciągamy datę i czas bezpośrednio z ISO stringa, bez konwersji stref
+        const [datePart, timePart] = dt.split("T")
+        const [year, month, day] = datePart.split("-")
+        const time = timePart.slice(0, 5) // "HH:MM"
+        return `${day}.${month}.${year} ${time}`
       } catch {
         return String(dt)
       }
