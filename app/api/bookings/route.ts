@@ -17,10 +17,6 @@ const emailStyles = `
   .detail:last-of-type { border-bottom: none; }
   .detail-label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
   .detail-value { font-size: 16px; font-weight: 500; color: #1c1c1a; }
-  .buttons { margin-top: 28px; }
-  .btn { display: inline-block; padding: 14px 32px; border-radius: 24px; text-decoration: none; font-weight: 600; text-align: center; font-size: 15px; }
-  .btn-accept { background: #e8c46a; color: #5c3d00; }
-  .btn-reject { background: #c4a882; color: #3d2800; }
   .badge { display: inline-block; background: #fef3c7; color: #7a5c3a; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
   .footer { padding: 16px 28px; background: #fafaf8; border-top: 1px solid #ebebeb; text-align: center; font-size: 12px; color: #999; }
 `
@@ -114,10 +110,22 @@ export async function POST(request: NextRequest) {
               <div class="detail-label">Termin</div>
               <div class="detail-value">${slotDisplay}</div>
             </div>
-            <div class="buttons">
-              <a href="${APP_URL}/api/bookings/${booking.token}/accept" class="btn btn-accept">Potwierdź wizytę</a>
-              <a href="${APP_URL}/api/bookings/${booking.token}/reject" class="btn btn-reject">Odrzuć</a>
-            </div>
+            <table cellpadding="0" cellspacing="0" style="margin-top:28px;">
+              <tr>
+                <td style="padding-right:12px;">
+                  <a href="${APP_URL}/api/bookings/${booking.token}/accept"
+                     style="display:inline-block;padding:14px 32px;border-radius:24px;text-decoration:none;font-weight:600;font-size:15px;background:#e8c46a;color:#5c3d00;">
+                    Potwierdź wizytę
+                  </a>
+                </td>
+                <td>
+                  <a href="${APP_URL}/api/bookings/${booking.token}/reject"
+                     style="display:inline-block;padding:14px 32px;border-radius:24px;text-decoration:none;font-weight:600;font-size:15px;background:#c4a882;color:#3d2800;">
+                    Odrzuć
+                  </a>
+                </td>
+              </tr>
+            </table>
           </div>
           <div class="footer">BeautyFlow · Panel admina: <a href="${APP_URL}/admin" style="color:#d4a843">${APP_URL}/admin</a></div>
         </div>
