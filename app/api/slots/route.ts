@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   }
   
   const mapped = (slots || []).map((s: any) => {
-    const dt = s.start_time
+    const dt = s.start_time.replace('+00', '+02')
     const display = (() => {
       try {
         // Wyciągamy datę i czas bezpośrednio z ISO stringa, bez konwersji stref
