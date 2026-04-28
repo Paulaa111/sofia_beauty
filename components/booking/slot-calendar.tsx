@@ -60,11 +60,8 @@ export function SlotCalendar({ slots, onSelect, selected, isLoading }: SlotCalen
   }
   
   const formatTime = (datetime: string) => {
-    return new Date(datetime).toLocaleTimeString('pl-PL', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })
-  }
+  return datetime.split("T")[1]?.slice(0, 5) || ""
+}
   
   const isToday = (date: Date) => {
     const today = new Date()
