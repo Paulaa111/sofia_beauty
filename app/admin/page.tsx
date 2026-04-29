@@ -53,6 +53,7 @@ export default function AdminPage() {
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [slotsError, setSlotsError] = useState<string | null>(null)
   const [createDate, setCreateDate] = useState<Date | undefined>(() => new Date())
+  const [calendarOpen, setCalendarOpen] = useState(false)
   const [selectedTimes, setSelectedTimes] = useState<string[]>(["09:00", "10:00", "11:00"])
   const [createSlotsLoading, setCreateSlotsLoading] = useState(false)
   const [createSlotsError, setCreateSlotsError] = useState<string | null>(null)
@@ -446,6 +447,7 @@ export default function AdminPage() {
                           onSelect={(date) => {
                             setCreateDate(date)
                             setSelectedTimes([])
+                            setCalendarOpen(false)
                           }}
                         />
                       </PopoverContent>
