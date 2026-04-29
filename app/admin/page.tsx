@@ -430,7 +430,7 @@ export default function AdminPage() {
                 <div className="grid gap-2">
                   <div className="space-y-1">
                     <div className="text-xs text-muted-foreground">Data</div>
-                    <Popover>
+                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                       <PopoverTrigger asChild>
                         <button className="w-full text-left">
                           <Input
