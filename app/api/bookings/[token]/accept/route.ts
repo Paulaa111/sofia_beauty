@@ -59,7 +59,6 @@ export async function GET(
     })
   }
 
-  // Synchronizacja z Google Sheets + Kalendarz
   if (process.env.GOOGLE_SCRIPT_URL) {
     try {
       await Promise.all([
@@ -100,8 +99,8 @@ export async function GET(
     const tipsHtml = tips
       .map(tip => `
         <tr>
-          <td style="padding:8px 0;font-size:14px;color:#444444;border-bottom:1px solid #f5f0e8;">
-            <span style="color:#d4a843;margin-right:8px;">✦</span>${tip}
+          <td style="padding:8px 0;font-size:14px;color:#555;border-bottom:1px solid #f5f0e8;">
+            — ${tip}
           </td>
         </tr>
       `)
@@ -111,53 +110,46 @@ export async function GET(
       await resend.emails.send({
         from: "BeautyFlow <onboarding@resend.dev>",
         to: booking.client_email,
-        subject: `Wizyta potwierdzona – ${booking.procedure_name}`,
+        subject: `Wizyta potwierdzona — ${booking.procedure_name}`,
         html: `
           <!DOCTYPE html>
           <html>
           <head><meta charset="utf-8"></head>
-          <body style="margin:0;padding:0;background:#f5f2ec;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f2ec;padding:32px 16px;">
+          <body style="margin:0;padding:0;background:#f5f5f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f2;padding:32px 16px;">
               <tr><td align="center">
                 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
 
-                  <tr><td style="background:linear-gradient(135deg,#d4a843 0%,#c49a3a 100%);padding:32px 24px;text-align:center;">
-                    <p style="margin:0;font-size:32px;">✨</p>
-                    <h1 style="margin:8px 0 0;color:#1c1c1a;font-size:24px;font-weight:700;">Wizyta potwierdzona!</h1>
+                  <tr><td style="padding:32px 32px 24px;border-bottom:1px solid #f0f0f0;">
+                    <div style="width:32px;height:2px;background:#c9a84c;margin-bottom:16px;"></div>
+                    <p style="margin:0;font-size:20px;font-weight:400;color:#1a1a1a;">Wizyta potwierdzona</p>
+                    <p style="margin:6px 0 0;font-size:14px;color:#999;">Cześć ${booking.client_name}, czekamy na Ciebie</p>
                   </td></tr>
 
-                  <tr><td style="padding:32px 32px 8px;">
-                    <p style="margin:0 0 24px;font-size:16px;color:#333333;">
-                      Cześć <strong>${booking.client_name}</strong>!<br/>
-                      Twoja wizyta została <strong>potwierdzona</strong>. Czekamy na Ciebie!
-                    </p>
-
-                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;border-bottom:1px solid #f0f0f0;padding-bottom:16px;">
-                      <tr><td style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;">Zabieg</td></tr>
-                      <tr><td style="font-size:18px;font-weight:600;color:#111111;">${booking.procedure_name}</td></tr>
+                  <tr><td style="padding:24px 32px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                      <tr>
+                        <td width="50%" style="padding-right:8px;">
+                          <div style="background:#fafafa;border-radius:8px;padding:14px;border-left:2px solid #c9a84c;">
+                            <div style="font-size:11px;color:#999;letter-spacing:0.08em;margin-bottom:4px;">ZABIEG</div>
+                            <div style="font-size:15px;color:#1a1a1a;">${booking.procedure_name}</div>
+                          </div>
+                        </td>
+                        <td width="50%" style="padding-left:8px;">
+                          <div style="background:#fafafa;border-radius:8px;padding:14px;border-left:2px solid #c9a84c;">
+                            <div style="font-size:11px;color:#999;letter-spacing:0.08em;margin-bottom:4px;">TERMIN</div>
+                            <div style="font-size:15px;color:#1a1a1a;">${booking.slot_display}</div>
+                          </div>
+                        </td>
+                      </tr>
                     </table>
 
-                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;border-bottom:1px solid #f0f0f0;padding-bottom:16px;">
-                      <tr><td style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;">Termin</td></tr>
-                      <tr><td style="font-size:18px;font-weight:600;color:#111111;">${booking.slot_display}</td></tr>
-                    </table>
-
-                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-                      <tr><td style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;">Status</td></tr>
-                      <tr><td>
-                        <span style="display:inline-block;background:#fef3c7;color:#7a5c3a;border-radius:20px;padding:6px 16px;font-size:14px;font-weight:600;">Potwierdzona</span>
-                      </td></tr>
-                    </table>
-
-                    <!-- Zalecenia -->
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
                       <tr>
                         <td style="background:#fdf9f0;border-radius:8px;padding:16px;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="font-size:13px;font-weight:600;color:#7a5c3a;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:12px;">
-                                Jak się przygotować?
-                              </td>
+                              <td style="font-size:11px;color:#c9a84c;letter-spacing:0.1em;padding-bottom:10px;">JAK SIĘ PRZYGOTOWAĆ</td>
                             </tr>
                             ${tipsHtml}
                           </table>
@@ -165,13 +157,11 @@ export async function GET(
                       </tr>
                     </table>
 
-                    <p style="font-size:14px;color:#666666;margin:0 0 32px;">
-                      Jeśli musisz odwołać wizytę, skontaktuj się z salonem jak najwcześniej. Dziękujemy! 💛
-                    </p>
+                    <p style="font-size:13px;color:#999;margin:0;">Jeśli musisz odwołać wizytę, skontaktuj się z salonem jak najwcześniej.</p>
                   </td></tr>
 
-                  <tr><td style="background:#fafaf8;padding:16px 32px;text-align:center;border-top:1px solid #f0f0f0;">
-                    <p style="margin:0;font-size:12px;color:#999999;">BeautyFlow · Dziękujemy za zaufanie 💛</p>
+                  <tr><td style="padding:16px 32px;border-top:1px solid #f0f0f0;font-size:12px;color:#bbb;text-align:center;">
+                    Sofia Beauty Studio · Dziękujemy za zaufanie
                   </td></tr>
 
                 </table>
@@ -192,7 +182,7 @@ export async function GET(
 }
 
 function renderResultPage(success: boolean, message: string) {
-  const color = success ? "#d4a843" : "#7a5c3a"
+  const color = success ? "#c9a84c" : "#7a5c3a"
   const icon = success ? "✓" : "✗"
   return `
     <!DOCTYPE html>
