@@ -5,20 +5,6 @@ import { Resend } from "resend"
 const resend = new Resend(process.env.RESEND_API_KEY)
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
-const emailStyles = `
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f2ec; color: #1c1c1a; margin: 0; padding: 20px; }
-  .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .header { background: linear-gradient(135deg, #d4a843 0%, #c49a3a 100%); padding: 28px 24px; text-align: center; }
-  .header h1 { color: #1c1c1a; margin: 0; font-size: 24px; font-weight: 700; }
-  .content { padding: 28px; }
-  .detail { margin-bottom: 16px; border-bottom: 1px solid #ebebeb; padding-bottom: 16px; }
-  .detail:last-of-type { border-bottom: none; }
-  .detail-label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-  .detail-value { font-size: 16px; font-weight: 500; color: #1c1c1a; }
-  .badge-rejected { display: inline-block; background: #f5ede0; color: #7a5c3a; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
-  .footer { padding: 16px 28px; background: #fafaf8; border-top: 1px solid #ebebeb; text-align: center; font-size: 12px; color: #999; }
-`
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
@@ -50,7 +36,6 @@ export async function GET(
     .update({ status: "available" })
     .eq("id", booking.slot_id)
 
-  // Synchronizacja z Google Sheets
   if (process.env.GOOGLE_SCRIPT_URL) {
     try {
       await fetch(process.env.GOOGLE_SCRIPT_URL, {
@@ -73,40 +58,64 @@ export async function GET(
   }
 
   if (process.env.RESEND_API_KEY && booking.client_email) {
-    const rejectedHtml = `
-      <!DOCTYPE html><html><head><meta charset="utf-8"><style>${emailStyles}</style></head>
-      <body>
-        <div class="container">
-          <div class="header"><h1>😔 Termin niedostępny</h1></div>
-          <div class="content">
-            <p style="margin-top:0; color:#444;">Cześć <strong>${booking.client_name}</strong>! Niestety wybrany termin nie jest już dostępny. Zapraszamy do ponownej rezerwacji.</p>
-            <div class="detail">
-              <div class="detail-label">Zabieg</div>
-              <div class="detail-value">${booking.procedure_name}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Termin</div>
-              <div class="detail-value">${booking.slot_display}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Status</div>
-              <div class="detail-value"><span class="badge-rejected">Niedostępny</span></div>
-            </div>
-            <p style="margin-bottom:0;">
-              <a href="${APP_URL}" style="display:inline-block; background:#d4a843; color:#1c1c1a; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600;">Zarezerwuj inny termin →</a>
-            </p>
-          </div>
-          <div class="footer">BeautyFlow · Przepraszamy za niedogodności 💛</div>
-        </div>
-      </body></html>
-    `
-
     try {
       await resend.emails.send({
         from: "BeautyFlow <onboarding@resend.dev>",
         to: booking.client_email,
-        subject: `Informacja o rezerwacji – ${booking.procedure_name}`,
-        html: rejectedHtml,
+        subject: `Informacja o rezerwacji — ${booking.procedure_name}`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head><meta charset="utf-8"></head>
+          <body style="margin:0;padding:0;background:#f5f5f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f2;padding:32px 16px;">
+              <tr><td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+
+                  <tr><td style="padding:32px 32px 24px;border-bottom:1px solid #f0f0f0;">
+                    <div style="width:32px;height:2px;background:#c9a84c;margin-bottom:16px;"></div>
+                    <p style="margin:0;font-size:20px;font-weight:400;color:#1a1a1a;">Termin niedostępny</p>
+                    <p style="margin:6px 0 0;font-size:14px;color:#999;">Cześć ${booking.client_name}, niestety mamy złe wieści</p>
+                  </td></tr>
+
+                  <tr><td style="padding:24px 32px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                      <tr>
+                        <td width="50%" style="padding-right:8px;">
+                          <div style="background:#fafafa;border-radius:8px;padding:14px;border-left:2px solid #ddd;">
+                            <div style="font-size:11px;color:#999;letter-spacing:0.08em;margin-bottom:4px;">ZABIEG</div>
+                            <div style="font-size:15px;color:#1a1a1a;">${booking.procedure_name}</div>
+                          </div>
+                        </td>
+                        <td width="50%" style="padding-left:8px;">
+                          <div style="background:#fafafa;border-radius:8px;padding:14px;border-left:2px solid #ddd;">
+                            <div style="font-size:11px;color:#999;letter-spacing:0.08em;margin-bottom:4px;">TERMIN</div>
+                            <div style="font-size:15px;color:#1a1a1a;">${booking.slot_display}</div>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <div style="border-left:2px solid #c9a84c;padding-left:16px;margin-bottom:24px;">
+                      <div style="font-size:14px;color:#555;line-height:1.7;">Niestety wybrany termin nie jest już dostępny. Zapraszamy do ponownej rezerwacji — chętnie znajdziemy dla Ciebie inny termin.</div>
+                    </div>
+
+                    <a href="${APP_URL}"
+                       style="display:inline-block;padding:12px 28px;border-radius:24px;text-decoration:none !important;font-weight:500;font-size:14px;background:#c9a84c;color:#3d2800 !important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+                      Zarezerwuj inny termin
+                    </a>
+                  </td></tr>
+
+                  <tr><td style="padding:16px 32px;border-top:1px solid #f0f0f0;font-size:12px;color:#bbb;text-align:center;">
+                    Sofia Beauty Studio · Przepraszamy za niedogodności
+                  </td></tr>
+
+                </table>
+              </td></tr>
+            </table>
+          </body>
+          </html>
+        `
       })
     } catch (emailError) {
       console.error("Error sending rejection email:", emailError)
