@@ -7,20 +7,6 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const OWNER_EMAIL = process.env.OWNER_EMAIL || "owner@example.com"
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
-const emailStyles = `
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f2ec; color: #1c1c1a; margin: 0; padding: 20px; }
-  .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .header { background: linear-gradient(135deg, #d4a843 0%, #c49a3a 100%); padding: 28px 24px; text-align: center; }
-  .header h1 { color: #1c1c1a; margin: 0; font-size: 24px; font-weight: 700; }
-  .content { padding: 28px; }
-  .detail { margin-bottom: 16px; border-bottom: 1px solid #ebebeb; padding-bottom: 16px; }
-  .detail:last-of-type { border-bottom: none; }
-  .detail-label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-  .detail-value { font-size: 16px; font-weight: 500; color: #1c1c1a; }
-  .badge { display: inline-block; background: #fef3c7; color: #7a5c3a; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
-  .footer { padding: 16px 28px; background: #fafaf8; border-top: 1px solid #ebebeb; text-align: center; font-size: 12px; color: #999; }
-`
-
 export async function GET() {
   const supabase = await createClient()
 
@@ -83,14 +69,13 @@ export async function POST(request: NextRequest) {
     .update({ status: "booked" })
     .eq("id", slotId)
 
-  // Synchronizacja z Google Sheets
   if (process.env.GOOGLE_SCRIPT_URL) {
     try {
       await fetch(process.env.GOOGLE_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "create",   // ← dodaj tę linijkę
+          action: "create",
           created_at: new Date().toLocaleString("pl-PL"),
           client_name: clientName,
           client_email: clientEmail,
@@ -107,77 +92,132 @@ export async function POST(request: NextRequest) {
 
   if (process.env.RESEND_API_KEY) {
     const ownerHtml = `
-      <!DOCTYPE html><html><head><meta charset="utf-8"><style>${emailStyles}</style></head>
-      <body>
-        <div class="container">
-          <div class="header"><h1>🗓 Nowa Rezerwacja</h1></div>
-          <div class="content">
-            <div class="detail">
-              <div class="detail-label">Klientka</div>
-              <div class="detail-value">${clientName}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Email</div>
-              <div class="detail-value">${clientEmail}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Telefon</div>
-              <div class="detail-value">${clientPhone || "Nie podano"}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Zabieg</div>
-              <div class="detail-value">${procedureName}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Termin</div>
-              <div class="detail-value">${slotDisplay}</div>
-            </div>
-            <table cellpadding="0" cellspacing="0" style="margin-top:28px;">
-              <tr>
-                <td style="padding-right:12px;">
-                  <a href="${APP_URL}/api/bookings/${booking.token}/accept"
-                     style="display:inline-block;padding:14px 32px;border-radius:24px;text-decoration:none !important;font-weight:600;font-size:15px;background:#e8c46a;color:#5c3d00 !important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-                    Potwierdź wizytę
-                  </a>
-                </td>
-                <td>
-                  <a href="${APP_URL}/api/bookings/${booking.token}/reject"
-                     style="display:inline-block;padding:14px 32px;border-radius:24px;text-decoration:none !important;font-weight:600;font-size:15px;background:#c4a882;color:#3d2800 !important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-                    Odrzuć
-                  </a>
-                </td>
-              </tr>
+      <!DOCTYPE html>
+      <html>
+      <head><meta charset="utf-8"></head>
+      <body style="margin:0;padding:0;background:#f5f5f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f2;padding:32px 16px;">
+          <tr><td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+
+              <tr><td style="padding:32px 32px 24px;border-bottom:1px solid #f0f0f0;">
+                <div style="width:32px;height:2px;background:#c9a84c;margin-bottom:16px;"></div>
+                <p style="margin:0;font-size:20px;font-weight:400;color:#1a1a1a;">Nowa rezerwacja</p>
+                <p style="margin:6px 0 0;font-size:14px;color:#999;">${clientName} — ${procedureName}</p>
+              </td></tr>
+
+              <tr><td style="padding:24px 32px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                  <tr>
+                    <td width="50%" style="padding-right:8px;">
+                      <div style="background:#fafafa;border-radius:8px;padding:14px;border-left:2px solid #c9a84c;">
+                        <div style="font-size:11px;color:#999;letter-spacing:0.08em;margin-bottom:4px;">ZABIEG</div>
+                        <div style="font-size:15px;color:#1a1a1a;">${procedureName}</div>
+                      </div>
+                    </td>
+                    <td width="50%" style="padding-left:8px;">
+                      <div style="background:#fafafa;border-radius:8px;padding:14px;border-left:2px solid #c9a84c;">
+                        <div style="font-size:11px;color:#999;letter-spacing:0.08em;margin-bottom:4px;">TERMIN</div>
+                        <div style="font-size:15px;color:#1a1a1a;">${slotDisplay}</div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;border-top:1px solid #f5f5f5;padding-top:20px;">
+                  <tr>
+                    <td style="font-size:11px;color:#999;letter-spacing:0.08em;padding-bottom:12px;">DANE KLIENTKI</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:14px;color:#444;padding:4px 0;">${clientName}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:14px;color:#444;padding:4px 0;">${clientEmail}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:14px;color:#444;padding:4px 0;">${clientPhone || "Telefon nie podany"}</td>
+                  </tr>
+                </table>
+
+                <table cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding-right:12px;">
+                      <a href="${APP_URL}/api/bookings/${booking.token}/accept"
+                         style="display:inline-block;padding:12px 28px;border-radius:24px;text-decoration:none !important;font-weight:500;font-size:14px;background:#c9a84c;color:#3d2800 !important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+                        Potwierdź wizytę
+                      </a>
+                    </td>
+                    <td>
+                      <a href="${APP_URL}/api/bookings/${booking.token}/reject"
+                         style="display:inline-block;padding:12px 28px;border-radius:24px;text-decoration:none !important;font-weight:500;font-size:14px;background:#ede8e0;color:#5c5040 !important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+                        Odrzuć
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td></tr>
+
+              <tr><td style="padding:16px 32px;border-top:1px solid #f0f0f0;font-size:12px;color:#bbb;text-align:center;">
+                Sofia Beauty Studio · <a href="${APP_URL}/admin" style="color:#c9a84c;text-decoration:none;">Panel admina</a>
+              </td></tr>
+
             </table>
-          </div>
-          <div class="footer">BeautyFlow · Panel admina: <a href="${APP_URL}/admin" style="color:#d4a843">${APP_URL}/admin</a></div>
-        </div>
-      </body></html>
+          </td></tr>
+        </table>
+      </body>
+      </html>
     `
 
     const clientPendingHtml = `
-      <!DOCTYPE html><html><head><meta charset="utf-8"><style>${emailStyles}</style></head>
-      <body>
-        <div class="container">
-          <div class="header"><h1>✨ Rezerwacja przyjęta!</h1></div>
-          <div class="content">
-            <p style="margin-top:0; color:#444;">Cześć <strong>${clientName}</strong>! Twoja prośba o rezerwację dotarła do salonu. Poinformujemy Cię mailowo, gdy zostanie potwierdzona.</p>
-            <div class="detail">
-              <div class="detail-label">Zabieg</div>
-              <div class="detail-value">${procedureName}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Termin</div>
-              <div class="detail-value">${slotDisplay}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Status</div>
-              <div class="detail-value"><span class="badge">⏳ Oczekuje na potwierdzenie</span></div>
-            </div>
-            <p style="color:#888; font-size:14px; margin-bottom:0;">Masz pytania? Odpowiedz na tego maila lub zadzwoń do salonu.</p>
-          </div>
-          <div class="footer">BeautyFlow · Dziękujemy za zaufanie 💛</div>
-        </div>
-      </body></html>
+      <!DOCTYPE html>
+      <html>
+      <head><meta charset="utf-8"></head>
+      <body style="margin:0;padding:0;background:#f5f5f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f2;padding:32px 16px;">
+          <tr><td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+
+              <tr><td style="padding:32px 32px 24px;border-bottom:1px solid #f0f0f0;">
+                <div style="width:32px;height:2px;background:#c9a84c;margin-bottom:16px;"></div>
+                <p style="margin:0;font-size:20px;font-weight:400;color:#1a1a1a;">Rezerwacja przyjęta</p>
+                <p style="margin:6px 0 0;font-size:14px;color:#999;">Cześć ${clientName}, czekamy na potwierdzenie</p>
+              </td></tr>
+
+              <tr><td style="padding:24px 32px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                  <tr>
+                    <td width="50%" style="padding-right:8px;">
+                      <div style="background:#fafafa;border-radius:8px;padding:14px;border-left:2px solid #c9a84c;">
+                        <div style="font-size:11px;color:#999;letter-spacing:0.08em;margin-bottom:4px;">ZABIEG</div>
+                        <div style="font-size:15px;color:#1a1a1a;">${procedureName}</div>
+                      </div>
+                    </td>
+                    <td width="50%" style="padding-left:8px;">
+                      <div style="background:#fafafa;border-radius:8px;padding:14px;border-left:2px solid #c9a84c;">
+                        <div style="font-size:11px;color:#999;letter-spacing:0.08em;margin-bottom:4px;">TERMIN</div>
+                        <div style="font-size:15px;color:#1a1a1a;">${slotDisplay}</div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
+                <div style="border-left:2px solid #c9a84c;padding-left:16px;margin-bottom:24px;">
+                  <div style="font-size:12px;color:#c9a84c;letter-spacing:0.08em;margin-bottom:6px;">STATUS</div>
+                  <div style="font-size:14px;color:#555;">Twoja rezerwacja dotarła do salonu. Poinformujemy Cię mailowo gdy zostanie potwierdzona.</div>
+                </div>
+
+                <p style="font-size:13px;color:#999;margin:0;">Masz pytania? Odpowiedz na tego maila lub zadzwoń do salonu.</p>
+              </td></tr>
+
+              <tr><td style="padding:16px 32px;border-top:1px solid #f0f0f0;font-size:12px;color:#bbb;text-align:center;">
+                Sofia Beauty Studio · Dziękujemy za zaufanie
+              </td></tr>
+
+            </table>
+          </td></tr>
+        </table>
+      </body>
+      </html>
     `
 
     try {
@@ -185,13 +225,13 @@ export async function POST(request: NextRequest) {
         resend.emails.send({
           from: "BeautyFlow <onboarding@resend.dev>",
           to: OWNER_EMAIL,
-          subject: `🗓 Nowa rezerwacja: ${procedureName} – ${clientName}`,
+          subject: `Nowa rezerwacja: ${procedureName} — ${clientName}`,
           html: ownerHtml,
         }),
         resend.emails.send({
           from: "BeautyFlow <onboarding@resend.dev>",
           to: clientEmail,
-          subject: `Twoja rezerwacja została przyjęta – ${procedureName}`,
+          subject: `Rezerwacja przyjęta — ${procedureName}`,
           html: clientPendingHtml,
         }),
       ])
