@@ -443,7 +443,10 @@ export default function AdminPage() {
                         <DateCalendar
                           mode="single"
                           selected={createDate}
-                          onSelect={setCreateDate}
+                          onSelect={(date) => {
+                            setCreateDate(date)
+                            setSelectedTimes([])
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
