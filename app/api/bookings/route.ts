@@ -25,7 +25,15 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const { clientName, clientEmail, clientPhone, procedureName, slotId, slotDisplay } = body
+  const {
+    clientName,
+    clientEmail,
+    clientPhone,
+    procedureName,
+    slotId,
+    slotDisplay,
+    qualifyingAnswers,
+  } = body
 
   if (!clientName || !clientEmail || !procedureName || !slotId) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -44,6 +52,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Slot is no longer available" }, { status: 400 })
   }
 
+  // Zbuduj podsumowanie z odpowiedziami
+  const answersText = qualifyingAnswers && Object.keys(qualifyingAnswers).length > 0
+    ? Object.entries(qualifyingAnswers as Record<string, string>)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(" | ")
+    : ""
+
+  const summary = answersText
+    ? `${procedureName} - ${slotDisplay} | ${answersText}`
+    : `${procedureName} - ${slotDisplay}`
+
   const { data: booking, error: bookingError } = await supabase
     .from("bookings")
     .insert({
@@ -54,7 +73,7 @@ export async function POST(request: NextRequest) {
       slot_id: slotId,
       slot_display: slotDisplay,
       status: "pending",
-      summary: `${procedureName} - ${slotDisplay}`
+      summary,
     })
     .select()
     .single()
@@ -82,8 +101,9 @@ export async function POST(request: NextRequest) {
           client_phone: clientPhone || "—",
           procedure_name: procedureName,
           slot_display: slotDisplay,
-          status: "Oczekuje"
-        })
+          status: "Oczekuje",
+          answers: answersText || "—",
+        }),
       })
     } catch (err) {
       console.error("Google Sheets sync error:", err)
@@ -91,6 +111,30 @@ export async function POST(request: NextRequest) {
   }
 
   if (process.env.RESEND_API_KEY) {
+    // Blok HTML z odpowiedziami z konsultacji – tylko gdy są odpowiedzi
+    const answersHtml =
+      qualifyingAnswers && Object.keys(qualifyingAnswers).length > 0
+        ? `
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+          <tr>
+            <td style="font-size:11px;color:#999;letter-spacing:0.08em;padding-bottom:12px;">
+              ODPOWIEDZI Z KONSULTACJI
+            </td>
+          </tr>
+          ${Object.entries(qualifyingAnswers as Record<string, string>)
+            .map(
+              ([key, value]) => `
+            <tr>
+              <td style="padding:5px 0;border-bottom:1px solid #f5f5f5;">
+                <span style="font-size:13px;color:#999;">${key}:</span>
+                <span style="font-size:13px;color:#1a1a1a;font-weight:500;margin-left:8px;">${value}</span>
+              </td>
+            </tr>`
+            )
+            .join("")}
+        </table>`
+        : ""
+
     const ownerHtml = `
       <!DOCTYPE html>
       <html>
@@ -107,6 +151,7 @@ export async function POST(request: NextRequest) {
               </td></tr>
 
               <tr><td style="padding:24px 32px;">
+
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
                   <tr>
                     <td width="50%" style="padding-right:8px;">
@@ -139,7 +184,9 @@ export async function POST(request: NextRequest) {
                   </tr>
                 </table>
 
-                <table cellpadding="0" cellspacing="0">
+                ${answersHtml}
+
+                <table cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
                   <tr>
                     <td style="padding-right:12px;">
                       <a href="${APP_URL}/api/bookings/${booking.token}/accept"
@@ -155,6 +202,7 @@ export async function POST(request: NextRequest) {
                     </td>
                   </tr>
                 </table>
+
               </td></tr>
 
               <tr><td style="padding:16px 32px;border-top:1px solid #f0f0f0;font-size:12px;color:#bbb;text-align:center;">
